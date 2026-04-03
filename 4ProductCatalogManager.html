@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+
+
+    <style>
+
+        *{
+            margin: 0 auto;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f7fffd;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        header {
+            background: #02392b;
+            color: white;
+            text-align: center;
+            padding: 18px;
+        }
+        #wrap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 18px;
+            border-radius: 7px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        form {
+            margin: 20px;
+            background: white;
+            border-radius: 7px;
+            margin: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            padding: 10px;
+        }
+        input {
+            margin: 7px;
+            width: 90%;
+            padding: 10px;
+            border-radius: 7px;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        #allBtn {
+            padding: 10px;
+            display: flex;
+            width: 70%;
+        }
+        #add, #asc, #desc, #instock, #showAll, #clearAll {
+            padding: 9px;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #add:hover, #asc:hover, #desc:hover, #instock:hover, #showAll:hover, #clearAll:hover {
+            opacity: 0.7;
+        }
+        #add {
+            background: rgb(29, 179, 29);
+        }
+        #asc, #desc {
+            background: rgb(0, 115, 255);
+        }
+        #instock, #clearAll {
+            background: rgb(233, 10, 10);
+        }
+        #showAll {
+            background: #7f7f7f;
+        }
+        span {
+            color: #dc3545;
+            font-size: 12px;
+            display: block;
+        }
+
+    </style>
+
+
+</head>
+<body>
+
+    <header>
+        <h1>Product Catalog Manager</h1>
+    </header>
+
+    <form>
+        <input id="iName" type="text" placeholder="Product Name (Ex. Pencil Box)">
+        <span id="errName"></span>
+        <input id="iPrice" type="text" placeholder="Price(Rs)">
+        <span id="errPrice"></span>
+        <input id="iCat" type="text" placeholder="Category (Ex. Stationary,Electronics,Furniture)">
+        <span id="errCat"></span>
+        <input id="iStock" type="text" placeholder="Stock (0 or more)">
+        <span id="errStock"></span>
+    </form>
+
+    <div id="allBtn">
+        <button id="add">Add Product</button>
+        <button id="asc">Sort &darr;</button>
+        <button id="desc">Sort &uarr;</button>
+        <button id="instock">In Stock Only</button>
+        <button id="showAll">Show All</button>
+        <button id="clearAll">Clear All</button>
+    </div>
+
+    <div id="wrap"></div>
+
+    <script>
+
+        let products = [];
+
+        document.getElementById("add").addEventListener("click", function() {
+            let name=document.getElementById("iName").value.trim();
+            let price=Number(document.getElementById("iPrice").value.trim());
+            let cat=document.getElementById("iCat").value.trim();
+            let stock=Number(document.getElementById("iStock").value.trim());
+
+            let errName=document.getElementById("errName");
+            let errPrice=document.getElementById("errPrice");
+            let errCat=document.getElementById("errCat");
+            let errStock=document.getElementById("errStock");
+            errName.textContent="";
+            errPrice.textContent="";
+            errCat.textContent="";
+            errStock.textContent="";
+
+            let isValid=true;
+
+            if(name==="") {
+                errName.textContent="Product name is required."
+                isValid=false;
+            }
+            if(isNaN(price)||price<0||price==="") {
+                errPrice.textContent="Price should be valid and greater than zero."
+                isValid=false;
+            }
+            if(cat==="") {
+                errCat.textContent="Category is required.";
+                isValid=false;
+            }
+            if(stock<0||stock===""||isNaN(stock)) {
+                errStock.textContent="Stock must be 0 or more.";
+                isValid=false;
+            }
+
+            if(isValid) {
+                document.getElementById("iName").value="";
+                document.getElementById("iPrice").value="";
+                document.getElementById("iCat").value="";
+                document.getElementById("iStock").value="";
+
+                let product = {
+                    id: Date.now(),
+                    name: name,
+                    price: price,
+                    category: cat,
+                    stock: stock,
+                    tax: 0.18,
+
+                    getPriceWithTax() {
+                        return this.price*(1+this.tax);
+                    },
+
+                    isAvailable() {
+                        return this.stock>0;
+                    },
+
+                    toHTML() {
+                        let color=this.isAvailable()? "green" : "red";
+                        let st=this.isAvailable()? "In-Stock" : "Out-of-Stock";
+                        return `
+                        <div class="card" style="border-left:5px solid ${color};">
+                            <h3>${this.name}</h3>
+                            <p>Price: Rs.${this.price.toFixed(2)}</p>
+                            <p>Price with tax: Rs.${this.getPriceWithTax().toFixed(2)}</p>
+                            <p>Category: ${this.category}</p>
+                            <p>Stock: ${this.stock}</p>
+                            <span style="background:${color}; color:white; padding:7px; border-radius:4px;">${st}</span>
+                            <button style="background:red; padding:7px; margin:5px; border-radius:4px; border:none; color:white; cursor:pointer;" onclick="deleteProduct(${this.id})">Delete</button>
+                            <button onclick="showDetails(${this.id})" style="background:grey; padding:7px; margin:5px; border-radius:4px; border:none; color:white; cursor:pointer;">Details</button>
+                            </div>
+                        `
+                    }
+                };
+                products.push(product);
+                render();
+            }
+        });
+
+        function render(data=products) {
+            let card=document.getElementById("wrap");
+            if(data.length===0) {
+                card.innerHTML=`<p>No Product Available</p>`;
+                return;
+            }
+            card.innerHTML=data.map((p=>p.toHTML())).join("");
+        }
+
+        function deleteProduct(id) {
+            let index=products.findIndex(ind=>ind.id===id);
+            if(index!==-1) {
+                products.splice(index,1);
+                render();
+            }
+        }
+
+        function showDetails(id) {
+            let p=products.find(ind=>ind.id===id);
+            let detail="";
+            Object.entries(p).forEach(([key,value])=> {
+                if(p.hasOwnProperty(key)&&typeof value!=="function") {
+                    detail+=key + " : " + value + "\n";
+                }
+            });
+            alert(detail);
+        }
+
+        document.getElementById("asc").addEventListener("click", function() {
+            products.sort((a,b)=>a.price - b.price);
+            render();
+        });
+
+        document.getElementById("desc").addEventListener("click", function() {
+            products.sort((a,b)=>b.price - a.price);
+            render();
+        });
+
+        document.getElementById("instock").addEventListener("click", function() {
+            let filtered=products.filter(s=>s.stock>0);
+            render(filtered);
+        });
+        document.getElementById("showAll").addEventListener("click", function() {
+            render();
+        });
+        document.getElementById("clearAll").addEventListener("click", function() {
+            if(confirm("Do you want to clear all data? All your work will be lost!")) {
+                products = [];
+            }
+            render();
+        });
+
+    </script>
+
+    
+</body>
+</html>
