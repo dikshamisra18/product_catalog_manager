@@ -93,4 +93,4 @@ By developing this project, I learned:
 
 ## 📸 Preview
 
-![Product Catalog Manager](http://127.0.0.1:5500/Web%20Development/My%20Projects/ProductCatalogManager.html)
+![Product Catalog Manager](4productcatalog)
