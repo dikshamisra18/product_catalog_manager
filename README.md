@@ -93,4 +93,4 @@ By developing this project, I learned:
 
 ## 📸 Preview
 
-![Product Catalog Manager](4productcatalog)
+![Product Catalog Manager](4productcatalog.png)
